@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: Log Analyzer Dashboards
+    orgId: 1
+    folder: AI Log Analyzer
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/log-analyzer
+      foldersFromFilesStructure: false

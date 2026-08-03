@@ -1,0 +1,47 @@
+# Secrets and local environment
+.env
+*.env
+!*.env.example
+*.local
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+id_rsa*
+id_ed25519*
+
+# Logs and runtime data
+logs/
+*.log
+*.pid
+*.tmp
+tmp/
+.cache/
+cache/
+data/
+storage/
+
+# Dependencies and build outputs
+node_modules/
+dist/
+build/
+coverage/
+.next/
+.turbo/
+
+# Archives and large runtime artifacts
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+

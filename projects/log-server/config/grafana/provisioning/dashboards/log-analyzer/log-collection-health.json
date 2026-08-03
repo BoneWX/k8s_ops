@@ -1,0 +1,439 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "所选时间范围内写入 Loki 的 central-file-log 日志总量。",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"central-file-log\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$__range])) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "所选范围日志总量",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "最近 freshness 窗口内仍有日志写入的文件日志源数量。",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "count(sum by (filename) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$freshness]))) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "活跃日志源",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "最近 freshness 窗口内仍有日志写入的 log_domain/log_type 组合数量。",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "count(sum by (log_domain, log_type) (count_over_time({job=\"central-file-log\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$freshness]))) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "活跃日志类型",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "最近 1 小时内出现过、但最近 freshness 窗口没有任何日志的文件源数量。",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "decimals": 0,
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "count((sum by (filename, log_domain, log_type) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[1h]))) unless (sum by (filename, log_domain, log_type) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$freshness])))) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "静默日志源",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "按日志目录和类型展示滚动写入趋势，窗口由 Loki 的 $__auto 自动计算。",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 4,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "auto",
+            "spanNulls": true,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 4 },
+      "id": 5,
+      "options": {
+        "legend": { "calcs": ["lastNotNull", "max"], "displayMode": "table", "placement": "right", "showLegend": true },
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "sum by (log_domain, log_type) (count_over_time({job=\"central-file-log\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$__auto]))",
+          "legendFormat": "{{log_domain}}/{{log_type}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "日志写入趋势",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "最近 1 小时内有日志、但最近 freshness 窗口无日志的源；1h 日志量用于判断此前活跃程度。",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 0, "y": 12 },
+      "id": 6,
+      "options": { "cellHeight": "sm", "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "1h 日志量" }] },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(50, (sum by (filename, log_domain, log_type) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[1h]))) unless (sum by (filename, log_domain, log_type) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$freshness]))))",
+          "instant": true,
+          "legendFormat": "{{log_domain}}/{{log_type}} · {{filename}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "静默日志源明细",
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        { "id": "sortBy", "options": { "sort": [{ "desc": true, "field": "Value" }] } },
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "indexByName": { "Metric": 0, "Value": 1 }, "renameByName": { "Metric": "日志源", "Value": "1h 日志量" } } }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "最近 freshness 窗口写入量最高的文件日志源。",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 8, "y": 12 },
+      "id": 7,
+      "options": { "cellHeight": "sm", "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "日志量" }] },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(50, sum by (filename, log_domain, log_type) (count_over_time({job=\"central-file-log\", filename=~\".+\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$freshness])))",
+          "instant": true,
+          "legendFormat": "{{log_domain}}/{{log_type}} · {{filename}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "活跃日志源",
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        { "id": "sortBy", "options": { "sort": [{ "desc": true, "field": "Value" }] } },
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "indexByName": { "Metric": 0, "Value": 1 }, "renameByName": { "Metric": "日志源", "Value": "日志量" } } }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "所选时间范围内各日志目录和类型的总写入量。",
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "cellOptions": { "type": "auto" }, "inspect": false }, "mappings": [], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] } },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 8, "x": 16, "y": 12 },
+      "id": 8,
+      "options": { "cellHeight": "sm", "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": false }, "showHeader": true, "sortBy": [{ "desc": true, "displayName": "日志量" }] },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(50, sum by (log_domain, log_type) (count_over_time({job=\"central-file-log\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "{{log_domain}}/{{log_type}}",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "目录 / 类型日志量",
+      "transformations": [
+        { "id": "seriesToRows", "options": {} },
+        { "id": "sortBy", "options": { "sort": [{ "desc": true, "field": "Value" }] } },
+        { "id": "organize", "options": { "excludeByName": { "Time": true }, "indexByName": { "Metric": 0, "Value": 1 }, "renameByName": { "Metric": "日志目录 / 类型", "Value": "日志量" } } }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "当前筛选条件下最近写入的原始日志，可展开标签查看 filename 定位具体日志源。",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 21 },
+      "id": 9,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "{job=\"central-file-log\", log_domain=~\"$log_domain\", log_type=~\"$log_type\", ingest_type=~\"$ingest_type\"} |~ \"(?i)$search\"",
+          "maxLines": 500,
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "最近原始日志",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "tags": ["log-server", "loki", "collection-health", "ingestion"],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"central-file-log\"}, log_domain)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "日志目录",
+        "multi": false,
+        "name": "log_domain",
+        "options": [],
+        "query": "label_values({job=\"central-file-log\"}, log_domain)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"central-file-log\", log_domain=~\"$log_domain\"}, log_type)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "日志类型",
+        "multi": false,
+        "name": "log_type",
+        "options": [],
+        "query": "label_values({job=\"central-file-log\", log_domain=~\"$log_domain\"}, log_type)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"central-file-log\"}, ingest_type)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "采集方式",
+        "multi": false,
+        "name": "ingest_type",
+        "options": [],
+        "query": "label_values({job=\"central-file-log\"}, ingest_type)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": true, "text": "10 分钟", "value": "10m" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "活跃窗口",
+        "multi": false,
+        "name": "freshness",
+        "options": [
+          { "selected": false, "text": "5 分钟", "value": "5m" },
+          { "selected": true, "text": "10 分钟", "value": "10m" },
+          { "selected": false, "text": "30 分钟", "value": "30m" }
+        ],
+        "query": "5 分钟 : 5m,10 分钟 : 10m,30 分钟 : 30m",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": { "selected": true, "text": ".*", "value": ".*" },
+        "hide": 0,
+        "label": "日志搜索（正则）",
+        "name": "search",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "日志采集健康与断流监控",
+  "uid": "log-collection-health",
+  "version": 1,
+  "weekStart": "monday"
+}

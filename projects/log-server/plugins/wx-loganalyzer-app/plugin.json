@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "app",
+  "name": "AI Log Analyzer",
+  "id": "wx-loganalyzer-app",
+  "info": {
+    "description": "基于 AI worker 和 LiteLLM 的 Grafana AI 日志分析插件。",
+    "author": {
+      "name": "WX Ops"
+    },
+    "keywords": [
+      "app",
+      "ai",
+      "logs",
+      "loki",
+      "litellm",
+      "analysis"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "screenshots": [],
+    "version": "0.1.78",
+    "updated": "2026-06-08"
+  },
+  "includes": [
+    {
+      "type": "page",
+      "name": "自动分析结果",
+      "path": "/a/wx-loganalyzer-app/home",
+      "addToNav": true,
+      "defaultNav": true
+    },
+    {
+      "type": "page",
+      "name": "手动日志分析",
+      "path": "/a/wx-loganalyzer-app/analyzer",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "name": "使用说明",
+      "path": "/a/wx-loganalyzer-app/about",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "icon": "cog",
+      "name": "告警配置",
+      "path": "/a/wx-loganalyzer-app/alert-config",
+      "role": "Admin",
+      "addToNav": true,
+      "defaultNav": false
+    },
+    {
+      "type": "page",
+      "icon": "cog",
+      "name": "配置",
+      "path": "/plugins/wx-loganalyzer-app",
+      "role": "Admin",
+      "addToNav": true
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=12.3.0",
+    "plugins": []
+  }
+}

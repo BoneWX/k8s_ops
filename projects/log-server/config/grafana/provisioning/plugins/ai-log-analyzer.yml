@@ -1,0 +1,11 @@
+apiVersion: 1
+
+apps:
+  - type: wx-loganalyzer-app
+    disabled: false
+    jsonData:
+      defaultModel: ""
+      defaultMaxLines: 400
+      workerBaseUrl: ""
+      redactByDefault: true
+      defaultLanguage: "zh"

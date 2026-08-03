@@ -1,0 +1,62 @@
+services:
+  loki:
+    image: ${LOKI_IMAGE:-grafana/loki:latest}
+    container_name: logserver-loki
+    restart: unless-stopped
+    command:
+      - -config.file=/etc/loki/loki.yml
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${LOKI_HTTP_PORT:-3100}:3100"
+    volumes:
+      - ./config/loki/loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+
+  grafana:
+    image: ${GRAFANA_IMAGE:-grafana/grafana:latest}
+    container_name: logserver-grafana
+    restart: unless-stopped
+    depends_on:
+      - loki
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-ChangeMe_please}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: ${GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS:-}
+    ports:
+      - "${GRAFANA_HTTP_PORT:-3000}:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./plugins:/var/lib/grafana/plugins
+
+  alloy:
+    image: ${ALLOY_IMAGE:-grafana/alloy:latest}
+    container_name: logserver-alloy
+    restart: unless-stopped
+    depends_on:
+      - loki
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+    ports:
+      - "${ALLOY_HTTP_PORT:-12345}:12345"
+      - "${SYSLOG_TCP_PORT:-1514}:1514/tcp"
+      - "${SYSLOG_UDP_PORT:-1514}:1514/udp"
+    volumes:
+      - ./config/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+      - ${HOST_LOG_DIR:-./logs}:/var/log/central:ro
+
+volumes:
+  loki-data:
+  grafana-data:
+  alloy-data:

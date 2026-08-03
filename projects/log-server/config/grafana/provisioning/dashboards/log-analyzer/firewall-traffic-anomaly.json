@@ -1,0 +1,821 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "基于防火墙 traffic / utm 日志中的 sentbyte、rcvdbyte、sentpkt、rcvdpkt、srcip、dstip、service、action 等字段，观察流量速率、TOP 通信对象和异常外联线索。",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "按防火墙 sentbyte 字段计算当前查询窗口内的发送速率，单位为 bytes/s。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed-color"
+          },
+          "decimals": 2,
+          "noValue": "0",
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"sentbyte=(?P<sentbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap sentbyte | __error__=\"\" [$rate_window])) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "发送速率",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "按防火墙 rcvdbyte 字段计算当前查询窗口内的接收速率，单位为 bytes/s。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed-color"
+          },
+          "decimals": 2,
+          "noValue": "0",
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"rcvdbyte=(?P<rcvdbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap rcvdbyte | __error__=\"\" [$rate_window])) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "接收速率",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "当前时间范围内 sentbyte 的累计值，用于观察内网主机对外发送体量。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "blue",
+            "mode": "fixed-color"
+          },
+          "decimals": 2,
+          "noValue": "0",
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"sentbyte=(?P<sentbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap sentbyte | __error__=\"\" [$__range])) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "累计发送流量",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "当前时间范围内匹配 blocked、deny、drop、reject 等语义的防火墙事件数。",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "orange",
+            "mode": "fixed-color"
+          },
+          "decimals": 0,
+          "noValue": "0",
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | action=~\"(?i)(blocked|deny|drop|reject)\" [$__range])) or vector(0)",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "拒绝 / 阻断事件",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "sentbyte 与 rcvdbyte 的速率曲线。它比柱状事件计数更适合判断流量突增、回落和尖峰。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 4,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "noValue": "0",
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"sentbyte=(?P<sentbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap sentbyte | __error__=\"\" [$rate_window]))",
+          "legendFormat": "sentbyte",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum(rate({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"rcvdbyte=(?P<rcvdbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap rcvdbyte | __error__=\"\" [$rate_window]))",
+          "legendFormat": "rcvdbyte",
+          "refId": "B"
+        }
+      ],
+      "title": "防火墙流量速率趋势",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "按源 IP 聚合 sentbyte，优先发现对外发送体量异常的内网主机。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 12
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (srcip) (sum_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"sentbyte=(?P<sentbyte>[0-9]+)\" | srcip=~\"$src_ip\" | srcip!=\"\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap sentbyte | __error__=\"\" [$__range])))",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "TOP 源 IP（发送流量）",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "按最近 15 分钟的目标 IP 聚合 rcvdbyte，观察访问目标带来的回包体量。为降低 Loki 查询基数，此面板只响应目标 IP 与全文搜索过滤。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 12
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (dstip) (sum_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"rcvdbyte=(?P<rcvdbyte>[0-9]+)\" | dstip=~\"$dst_ip\" | dstip!=\"\" | unwrap rcvdbyte | __error__=\"\" [15m])))",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "TOP 目标 IP（接收流量）",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "按最近 5 分钟的服务字段统计事件数，适合观察突发高频服务。服务维度在当前 firewall 数据里基数较高，因此这里使用短窗口事件数而不是长窗口字节聚合。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "decimals": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 12
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "topk(15, sum by (service) (count_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | service=~\"(?i)$service\" | service!=\"\" [5m])))",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "高频服务（近 5 分钟）",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "目标国家不为 Reserved/China 的发送流量排行，用来快速定位异常外联或跨境大流量。为避免高基数查询，这里按目标 IP 与国家聚合。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "topk(20, sum by (dstip, dstcountry) (sum_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"dstcountry=\\\"(?P<dstcountry>[^\\\"]*)\\\"\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | regexp \"sentbyte=(?P<sentbyte>[0-9]+)\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | dstip!=\"\" | dstcountry!~\"(?i)(Reserved|China)\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | unwrap sentbyte | __error__=\"\" [$__range])))",
+          "instant": true,
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "外联目标流量排行",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "过滤常见端口后展示最近的非常见端口通信明细，辅助发现异常服务、临时端口或绕行访问。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "decimals": 0,
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" !~ \"dstport=(53|80|88|123|135|137|138|139|389|443|445|464|636|3389|8080|8443)( |$)\" | logfmt | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | line_format \"src={{.srcip}}:{{.srcport}} -> dst={{.dstip}}:{{.dstport}} country={{.dstcountry}} service={{.service}} action={{.action}} sent={{.sentbyte}} rcvd={{.rcvdbyte}} user={{.unauthuser}}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "非常见目标端口明细",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "阻断、拒绝、丢弃事件的趋势曲线，用于观察策略命中或攻击扫描尖峰。",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 4,
+            "showPoints": "never",
+            "spanNulls": false
+          },
+          "decimals": 0,
+          "noValue": "0",
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [
+            "lastNotNull",
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "sum by (action) (count_over_time({job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | regexp \"srcip=(?P<srcip>[^ ]+)\" | regexp \"dstip=(?P<dstip>[^ ]+)\" | regexp \"service=\\\"(?P<service>[^\\\"]*)\\\"\" | regexp \"action=\\\"(?P<action>[^\\\"]*)\\\"\" | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | action=~\"(?i)(blocked|deny|drop|reject)\" [$__auto]))",
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "title": "拒绝 / 阻断趋势",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "description": "展示发送流量超过阈值的防火墙会话，并格式化关键字段，便于从异常排行回到原始证据。",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "id": 12,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "expr": "{job=\"central-file-log\", log_domain=\"network\", log_type=\"firewall\"} |~ \"(?i)$search\" | logfmt | srcip=~\"$src_ip\" | dstip=~\"$dst_ip\" | service=~\"(?i)$service\" | action=~\"(?i)$action\" | sentbyte >= $large_bytes | line_format \"src={{.srcip}}:{{.srcport}} -> dst={{.dstip}}:{{.dstport}} country={{.dstcountry}} service={{.service}} action={{.action}} sent={{.sentbyte}} rcvd={{.rcvdbyte}} pkts={{.sentpkt}}/{{.rcvdpkt}} duration={{.duration}} user={{.unauthuser}}\"",
+          "refId": "A"
+        }
+      ],
+      "title": "大流量会话明细",
+      "type": "logs"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "ai-log-analyzer",
+    "network",
+    "firewall",
+    "traffic"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "5m",
+          "value": "5m"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "rate_window",
+        "options": [
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": true,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "15m",
+            "value": "15m"
+          }
+        ],
+        "query": "1m,5m,15m",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "name": "src_ip",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "name": "dst_ip",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "name": "service",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "name": "action",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": ".*",
+          "value": ".*"
+        },
+        "hide": 0,
+        "name": "search",
+        "options": [],
+        "query": ".*",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "10485760",
+          "value": "10485760"
+        },
+        "hide": 0,
+        "name": "large_bytes",
+        "options": [],
+        "query": "10485760",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "防火墙流量与异常监控",
+  "uid": "firewall-traffic-anomaly",
+  "version": 1,
+  "weekStart": ""
+}

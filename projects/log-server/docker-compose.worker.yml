@@ -1,0 +1,27 @@
+services:
+  ai-log-analyzer-worker:
+    image: ${NODE_IMAGE:-node:22-alpine}
+    container_name: logserver-ai-log-analyzer-worker
+    restart: unless-stopped
+    depends_on:
+      - loki
+    working_dir: /app
+    command:
+      - node
+      - worker/auto-analyzer.cjs
+      - --serve
+    env_file:
+      - ./config/worker/auto-analyzer.env
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      LOKI_BASE_URL: http://loki:3100
+      ANALYZER_CACHE_PATH: /config/seen-events.json
+      ANALYZER_RULES_PATH: /config/auto-analysis-rules.json
+      WORKER_API_ENABLED: "true"
+      WORKER_API_PORT: "8080"
+      WORKER_CORS_ORIGIN: ${WORKER_CORS_ORIGIN:-*}
+    ports:
+      - "${WORKER_HTTP_PORT:-18080}:8080"
+    volumes:
+      - ${AI_ANALYZER_APP_DIR:-./ai-log-analyzer-app}:/app:ro
+      - ./config/worker:/config

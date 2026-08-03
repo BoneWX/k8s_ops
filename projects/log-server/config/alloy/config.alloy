@@ -1,0 +1,94 @@
+logging {
+  level = "info"
+}
+
+loki.write "local_loki" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+// Exported log files copied or mounted on the log server.
+// Put files under HOST_LOG_DIR on the host; they are mounted as /var/log/central.
+// Recommended layout on the Ubuntu log server:
+//   HOST_LOG_DIR=/data/logs
+//   /data/logs/network/switch/*.log
+//   /data/logs/network/firewall/*.log
+//   /data/logs/security/waf/*.log
+//   /data/logs/app/game-gateway/*.log
+//
+// New directories are automatically discovered and labeled:
+//   log_domain = first directory under /data/logs
+//   log_type   = second directory under /data/logs, when present
+local.file_match "central_files" {
+  path_targets = [
+    {
+      __path__ = "/var/log/central/**/*.log",
+      ingest_type = "file",
+    },
+  ]
+  sync_period = "10s"
+}
+
+discovery.relabel "central_files" {
+  targets = local.file_match.central_files.targets
+
+  rule {
+    source_labels = ["__path__"]
+    regex = "/var/log/central/([^/]+)/.*"
+    target_label = "log_domain"
+    replacement = "$1"
+  }
+
+  rule {
+    source_labels = ["__path__"]
+    regex = "/var/log/central/[^/]+/([^/]+)/.*"
+    target_label = "log_type"
+    replacement = "$1"
+  }
+
+  rule {
+    source_labels = ["job"]
+    regex = ""
+    target_label = "job"
+    replacement = "central-file-log"
+  }
+
+}
+
+loki.source.file "central_files" {
+  targets = discovery.relabel.central_files.output
+  forward_to = [loki.write.local_loki.receiver]
+}
+
+// Network devices, firewalls, routers, and gateways can send syslog here.
+// Default listen port is 1514 in the container. Docker maps host SYSLOG_*_PORT to it.
+loki.source.syslog "network_syslog" {
+  listener {
+    address = "0.0.0.0:1514"
+    protocol = "tcp"
+    syslog_format = "rfc3164"
+    use_incoming_timestamp = true
+    rfc3164_default_to_current_year = true
+    labels = {
+      job = "network-syslog",
+      source_type = "network",
+      transport = "tcp",
+    }
+  }
+
+  listener {
+    address = "0.0.0.0:1514"
+    protocol = "udp"
+    syslog_format = "rfc3164"
+    use_incoming_timestamp = true
+    rfc3164_default_to_current_year = true
+    labels = {
+      job = "network-syslog",
+      source_type = "network",
+      transport = "udp",
+    }
+  }
+
+  forward_to = [loki.write.local_loki.receiver]
+}

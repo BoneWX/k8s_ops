@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "enabled": false,
+  "minSeverity": "P2",
+  "triggerLogLimit": 30,
+  "fields": {
+    "source": true,
+    "severity": true,
+    "log_category": true,
+    "log_domain": true,
+    "log_type": true,
+    "title": true,
+    "analysis": true,
+    "trigger_total": true,
+    "trigger_logs": true,
+    "generated_at": true,
+    "rule_id": false,
+    "rule_name": false,
+    "analysis_scenario_id": false,
+    "analysis_scenario_name": false,
+    "insight_mode": false,
+    "source_job": false,
+    "model": false,
+    "trigger_query": false,
+    "context_query": false
+  },
+  "targets": [
+    {
+      "id": "alert-platform",
+      "name": "Alert platform",
+      "enabled": true,
+      "url": "http://alert-platform.example/api/events",
+      "method": "POST",
+      "headers": {},
+      "timeoutMs": 10000
+    }
+  ],
+  "bindings": [
+    {
+      "id": "p2-plus-all",
+      "name": "All P2+ AI analysis alerts",
+      "enabled": true,
+      "sourceJob": "",
+      "logDomain": "",
+      "logType": "",
+      "ruleIds": [],
+      "targetIds": [
+        "alert-platform"
+      ]
+    },
+    {
+      "id": "network-sangfor",
+      "name": "Network Sangfor alerts",
+      "enabled": false,
+      "sourceJob": "central-file-log",
+      "logDomain": "network",
+      "logType": "sangfor",
+      "ruleIds": [
+        "network-sangfor-rule",
+        "network-sangfor-rule-2"
+      ],
+      "targetIds": [
+        "alert-platform"
+      ]
+    }
+  ]
+}
